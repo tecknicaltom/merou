@@ -8,20 +8,21 @@
 # container, run it with:
 #
 # docker build -t foo . && docker run -it -p 8888:8888 --mount type=bind,source=$PWD,target=/app foo
-
-# Tried building atop the simpler and smaller "python:2.7-slim" base,
-# but its "MariaDB" replacement for MySQL dies with "Specified key was
-# too long; max key length is 767 bytes" when our tests try creating
-# their tables.
-FROM ubuntu:16.04
+FROM python:3.7
 
 RUN apt-get update
 
 ENV DEBIAN_FRONTEND noninteractive
-RUN apt-get install -y libmysqlclient-dev mysql-client mysql-server
+RUN apt-get install -y default-libmysqlclient-dev default-mysql-client default-mysql-server
 RUN apt-get install -y python3-dev python3-pip gcc
 RUN apt-get install -y chromium-driver
 RUN apt-get install -y procps unzip wget
+RUN apt-get install -y libcurl4-openssl-dev libssl-dev
+
+# the default dev config uses sqlite, but this container will still run MySQL
+# (MariaDB) and this env var will ensure it's initialized in case local
+# development needs it
+ENV DB=mysql
 
 WORKDIR /app
 COPY ci/setup.sh /app/ci/setup.sh
